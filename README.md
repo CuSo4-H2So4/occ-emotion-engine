@@ -1,11 +1,11 @@
 # OCC Emotion Engine
 
 > A reusable **OCC cognitive emotion model × cybernetics** architecture — give AI characters a real emotion *engine*, not just a phrasebook.
-> 市面全是"教 AI 说什么话"（话术库/文案库），本框架是"教 AI 怎么产生情绪"（情感计算引擎）。
+> 本框架目的是"教 AI 怎么产生情绪"（情感计算引擎）。
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-## ✨ 核心卖点（Why this, not a prompt pack）
+##  核心卖点（Why this, not a prompt pack）
 
 - **机制，不是话术**：不给你一句句台词，给你一套情感产生的完整机制——任何角色拿来套，自动产生符合角色关系的情感输出
 - **可计算**：三层评价器 + VA 二维空间 + PID 反馈控制器，所有情感都有数学表达
@@ -14,7 +14,7 @@
 - **自适应**：依恋度慢变量调节情感阈值——关系越深，越容易触发正面情感
 - **控制论内核**：慢变量→快变量→即时变量单向流，无循环依赖；反馈闭环自我调节
 
-## 🚀 快速体验
+##  快速体验
 
 ```bash
 # 纯标准库，零依赖
@@ -34,7 +34,7 @@ python3 occ_engine_demo.py --demo   # 自动演示
   → 状态: 好感 -2.3   ← 非对称反馈：降比升狠
 ```
 
-## 🏗 架构总览
+##  架构总览
 
 ```
 输入（交互内容）
@@ -74,7 +74,7 @@ python3 occ_engine_demo.py --demo   # 自动演示
 └──────────────────────────┘
 ```
 
-## 📦 核心设计
+##  核心设计
 
 ### 变量系统（单向依赖链）
 
@@ -203,7 +203,7 @@ affection < 45 → attachment -= 0.05   # 双向，不再只升不降
 45~55 缓冲带不动
 ```
 
-## 📁 仓库结构
+##  仓库结构
 
 ```
 occ-emotion-engine/
@@ -212,7 +212,7 @@ occ-emotion-engine/
 └── README.md              # 本文档（架构手册）
 ```
 
-## 🚦 快速上手（设计步骤）
+##  快速上手（设计步骤）
 
 1. **定义核心变量**：Attachment/Affection/Mood，确认单向依赖
 2. **设计三层评价规则**：Event/Action/Object 的情感输出和 VA 增量
@@ -236,7 +236,7 @@ occ-emotion-engine/
 | 8 | 只升不降 | 被凶还涨好感 | 非对称反馈 ×1.5 |
 | 9 | 极性词表过宽 | "好"匹配"不好"误判为正 | 短语匹配+否定词处理 |
 
-## 📜 License & 致谢
+##  License & 致谢
 
 - 理论来源：Ortony-Clore-Collins 认知情感模型（OCC 模型, 1988）
 - 工程化框架：钱学森工程控制论（反馈控制/系统层次/稳态调节/最优化）
