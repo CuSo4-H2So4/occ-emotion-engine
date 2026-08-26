@@ -188,13 +188,17 @@ def appraise_object(state, appealingness, is_core=False):
 # 4. PID 反馈控制器（非对称：有升必须有降）
 # ============================================================
 
-def pid_feedback(state, polarity, valence_effect):
+def pid_feedback(state, polarity, valence_effect, compassion=False):
     """PID 简化式 + 非对称反馈（负向放大 ×1.5）"""
     Kp, Ki, Kd = 3.0, 0.3, 5.0
     u = polarity
     # 积分项（演示简化：本回合不累积历史，实际场景可累计长期偏差）
     integral = 0.0
     d_term = u - state.last_u
+    # 共情不罚：主人表露自身困境（难过/累了/压力大）时，引擎的负面情感
+    # 是对主人的关心，不伤好感度；只有"对主人的反感"（生气/不满/厌恶）才扣。
+    if compassion and valence_effect < 0:
+        valence_effect = 0.0
     delta = Kp * u * 0.4 + Ki * integral + Kd * d_term * 0.02 + valence_effect
     # 非对称：负向放大 1.5 倍
     if delta < 0:
@@ -241,9 +245,14 @@ POSITIVE_PHRASES = ["真好", "太好了", "好棒", "好喜欢", "真棒", "厉
                     "谢谢", "辛苦了", "乖", "可爱", "聪明", "漂亮", "帅", "谢谢您", "好厉害",
                     "不错", "真不错"]
 NEGATIVE_PHRASES = ["不好", "不对", "不行", "废物", "闭嘴", "滚蛋", "讨厌", "恨你",
-                    "气死", "烦死", "别烦", "别吵", "不想理", "丢人", "白痴", "笨蛋",
-                    "蠢货", "不喜欢", "不理你", "滚"]
+                    "气死", "烦死", "别烦", "别吵", "不想理", "丢人", "不喜欢", "不理你", "滚"]
+# 2026-08-26 修复：亲昵/宠溺骂词（笨蛋/白痴/蠢货等）已移出负面表——
+# 亲密关系中这类词多是甜蜜打闹，不是真凶；原表把它们判成负面，
+# 会让好感度在熟悉的打闹里越聊越冷（现场修复：主人说"越聊越冷淡"）。
 NEGATION_WORDS = ["不", "没", "别", "不许", "不要", "懒得", "不想"]
+# 共情场景：主人表露自身困境 → 引擎的负面情感是对主人的关心，不伤好感度（共情不罚）。
+# 与之相对的"对主人的反感"（生气/不满/厌恶）仍会扣好感度，保持"真凶就掉"的非对称。
+COMPASSION_KEYWORDS = ["难过", "伤心", "累", "辛苦", "忙", "压力", "倒霉", "难受", "糟糕"]
 
 
 def polarity_of(text):
@@ -282,6 +291,8 @@ class EmotionEngine:
 
         # 1. 极性分析 → 事件评价输入
         polarity = polarity_of(user_text)
+        # 共情场景检测：主人表露自身困境（难过/累/压力大等）→ 引擎共情不罚
+        is_compassion = any(k in user_text for k in COMPASSION_KEYWORDS)
 
         # 2. 三层评价（演示：按输入关键词触发不同评价类型）
         if any(k in user_text for k in ["期待", "希望", "答应", "说好"]):
@@ -317,8 +328,8 @@ class EmotionEngine:
                 st.valence = max(-1.0, min(1.0, st.valence + va2[0]))
                 st.arousal = max(0.0, min(1.0, st.arousal + va2[1]))
 
-        # 5. PID 反馈（有升有降）
-        pid_feedback(st, polarity, va[0] * 0.8)
+        # 5. PID 反馈（有升有降；共情场景不罚）
+        pid_feedback(st, polarity, va[0] * 0.8, compassion=is_compassion)
 
         # 6. 行为仲裁
         labels, behavior, intimacy = arbitrate(st)
